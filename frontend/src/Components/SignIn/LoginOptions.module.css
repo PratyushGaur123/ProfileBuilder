@@ -1,0 +1,52 @@
+.optionsContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.optionButton {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.optionButton:hover {
+    background-color: #0056b3;
+}
+
+.passwordContainer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.passwordLabel {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.passwordInput {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.passwordButton {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.passwordButton:hover {
+    background-color: #0056b3;
+}
