@@ -28,6 +28,8 @@ function SignUp() {
             navigate('/signin');
             return;
         }
+        setEmail('');
+        setPassword('');
     })
 
     return (

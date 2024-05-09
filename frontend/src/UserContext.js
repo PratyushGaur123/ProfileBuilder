@@ -117,6 +117,7 @@ function UserProvider({ children, navigate }) {
             if (error.response) {
                 alert(error.response.data.message);
                 // TODO: handle specific status codes 
+                setPassword('');
             }
             else {
                 alert("Network error. Please check your internet connection.");
