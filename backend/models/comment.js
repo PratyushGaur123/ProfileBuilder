@@ -10,10 +10,20 @@ const commentSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    post: [
+    commentAbleId: {                                              // comment belongs to a post
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'onModel',
+        required: true
+    },
+    onModel: {
+        type: String,
+        required: true,
+        enum: ['Post', 'Comment']
+    },
+    replies: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Post'
+            ref: 'Comment'
         }
     ],
     likes: [

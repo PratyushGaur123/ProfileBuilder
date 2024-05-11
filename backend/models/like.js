@@ -6,22 +6,21 @@ const likeSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    comments: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Comment'
-        }
-    ],
-    likes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Like'
-        }
-    ]
+    likeAbleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: 'onModel',
+        required: true
+    },
+    onModel: {
+        type: String,
+        enum: ['Post', 'Comment'],
+        required: true,
+    }
+
 }, {
     timestamps: true
 });
 
-const Post = mongoose.model('Post', postSchema);
+const Like = mongoose.model('Like', likeSchema);
 
-module.exports = Post;
+module.exports = Like;
