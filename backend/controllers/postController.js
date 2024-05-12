@@ -36,7 +36,7 @@ module.exports.readPosts = async function(req, res){
             path: 'comments',
             populate: {
                 path: 'replies',
-                model: 'Comment'
+                model: 'Reply'
             }
         })
         .sort({likes: -1});
@@ -63,7 +63,7 @@ module.exports.readUserPosts = function(req, res){
             path: 'comments',
             populate: {
                 path: 'replies',
-                model: 'Comment'
+                model: 'Reply'
             }
         })
         .sort('-createdAt');
