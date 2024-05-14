@@ -5,10 +5,11 @@ const Reply = require('../models/reply');
 module.exports.createComment = async function (req, res) {
     try {
         if (!req.user) {
-            return res.status(400).json({ message: 'User not found' });
+            return res.status(401).json({ message: 'Authentication required' });
         }
 
-        const { content, postId } = req.body;
+        const { content } = req.body;
+        const {postId} = req.params;
 
         if (!content || !postId) {
             return res.status(400).json({ message: 'Invalid request' });
@@ -56,11 +57,11 @@ module.exports.createComment = async function (req, res) {
 module.exports.deleteComment = async function (req, res) {
     try {
         if (!req.user) {
-            return res.status(400).json({ message: 'User not found' });
+            return res.status(400).json({ message: 'Authentication required' });
         }
 
-        const { commentId } = req.params;
-        if (!commentId) {
+        const { commentId, postId } = req.params;
+        if (!commentId || !postId) {
             return res.status(400).json({ message: 'Invalid request' });
         }
 
@@ -69,15 +70,25 @@ module.exports.deleteComment = async function (req, res) {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const post = await Post.findById(comment.post);
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-
         if (comment.user.toString()!== req.user.toString()) {
-            return res.status(401).json({ message: 'Unauthorized' });
+            return res.status(403).json({ message: 'Unauthorized' });
         }
 
+        if (comment.post.toString() !== postId) {
+            return res.status(400).json({ message: 'Invalid request: Comment does not belong to the specified post' });
+        }
+
+        const post = await Post.findById(comment.post);
+        if (post) {
+            // deleting comment from 'comments' array of the post
+            const updatedPost = await Post.findByIdAndUpdate(post._id, {
+                $pull: {
+                    comments: commentId
+                }
+            }, {
+                new: true
+            });
+        }
 
         // deleting comment from 'Comment' collection
         const deletedComment = await Comment.deleteOne({
@@ -87,15 +98,6 @@ module.exports.deleteComment = async function (req, res) {
         //deleting all the replies under that comment
         const deletedReplies = await Reply.deleteMany({
             comment: commentId
-        });
-
-        // deleting comment from 'comments' array of the post
-        const updatedPost = await Post.findByIdAndUpdate(post._id, {
-            $pull: {
-                comments: commentId
-            }
-        }, {
-            new: true
         });
 
         return res.status(200).json({

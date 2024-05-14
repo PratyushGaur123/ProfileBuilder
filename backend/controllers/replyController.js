@@ -24,6 +24,10 @@ module.exports.createReply = async function(req, res){
             return res.status(404).json({message: 'Comment not found'});
         }
 
+        if(comment.post.toString()!== postId){
+            return res.status(400).json({message: 'Invalid request: Comment does not belong to the specified post'});
+        }
+
         const newReply = await Reply.create({
             content,
             user: req.user,
@@ -56,7 +60,7 @@ module.exports.deleteReply = async function(req, res){
         }
 
         const {commentId, postId, replyId} = req.params;
-        if(!commentId ||!postId){
+        if(!commentId || !postId || !replyId){
             return res.status(400).json({message: 'Invalid request'});
         }
 
@@ -77,6 +81,14 @@ module.exports.deleteReply = async function(req, res){
 
         if(reply.user.toString()!== req.user.toString()){
             return res.status(401).json({message: 'Unauthorized'});
+        }
+
+        if(comment.post.toString() !== postId){
+            return res.status(400).json({message: 'Invalid request: Comment does not belong to the specified post'});
+        }
+
+        if(reply.comment.toString() !== commentId){
+            return res.status(400).json({message: 'Invalid request: Reply does not belong to the specified comment'});
         }
 
         const updatedComment = await Comment.updateOne({

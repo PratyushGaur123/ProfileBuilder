@@ -83,7 +83,8 @@ module.exports.updatePost = async function(req, res){
         if(!req.user){
             return res.status(400).json({ message: 'User not found' });
         }
-        const {postId, content} = req.body;
+        const {content} = req.body;
+        const {postId} = req.params;
 
         if(!postId || !content){
             return res.status(400).json({ message: 'Invalid request' });
@@ -120,7 +121,7 @@ module.exports.deletePost = async function(req, res){
         if(!req.user){
             return res.status(400).json({ message: 'User not found' });
         }
-        const {postId} = req.body;
+        const {postId} = req.params;
         if(!postId){
             return res.status(400).json({ message: 'Invalid request' });
         }
