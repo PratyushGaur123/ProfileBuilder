@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './NewPassword.module.css'; 
-import { useUserContext } from '../../UserContext';
+import { useUserContext } from '../../Contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 import BeatLoader from "react-spinners/BeatLoader";
 import axios from 'axios';

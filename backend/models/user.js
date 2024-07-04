@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const multer = require('multer');
+const path = require('path');
+const AVATAR_PATH = path.join(__dirname, '..', '..', 'public', 'avatars');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -28,6 +31,9 @@ const userSchema = new mongoose.Schema({
     verified: {
         type: Boolean,
         default: false
+    },
+    avatar: {
+        type: String
     }
 }, {
     timestamps: true

@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const Reply = require('../models/reply');   
 const Like = require('../models/like');
 
 module.exports.toggleLike = async function(req, res){
@@ -7,23 +8,26 @@ module.exports.toggleLike = async function(req, res){
         let likeAble;
         let deleted = false;
 
-        if(!req.user){
-            return res.status(400).json({ message: 'User not found' });
+        if(!req.user.id){
+            return res.status(400).json({ message: 'Authentication Required' });
         }
 
         const { likeAbleId, type } = req.body;   // likeAbleId means the id of the post/comment that is liked/unliked
 
-        if(!likeAbleId || !type || (type !== 'Post' && type !== 'Comment')) {
+        if(!likeAbleId || !type || (type !== 'Post' && type !== 'Comment' && type !== 'Reply')) {
             return res.status(400).json({ message: 'Invalid request' });
         }
 
         if( type === 'Post' ){
             likeAble = await Post.findById(likeAbleId).populate('likes');
-        }else{
+        }else if( type === 'Comment' ){
             likeAble = await Comment.findById(likeAbleId).populate('likes');
         }
+        else if( type === 'Reply' ){
+            likeAble = await Reply.findById(likeAbleId).populate('likes');
+        }
 
-        const existingLike = await Like.findOne({ user: req.user, likeAbleId, onModel: type });
+        const existingLike = await Like.findOne({ user: req.user.id, likeAbleId, onModel: type });
 
         if(existingLike){
             await likeAble.updateOne({
@@ -36,7 +40,7 @@ module.exports.toggleLike = async function(req, res){
             deleted = true;
         }else{
             const newLike = await Like.create({
-                user: req.user,
+                user: req.user.id,
                 likeAbleId,
                 onModel: type
             });
@@ -48,7 +52,7 @@ module.exports.toggleLike = async function(req, res){
             });
         }
 
-        return res.json(200, {
+        return res.status(200).json({
             message: "Request successful!",
             data: {
                 deleted: deleted

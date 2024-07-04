@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Otp.module.css';
 import { useNavigate } from 'react-router-dom';
-import { useUserContext } from '../../UserContext';
+import { useUserContext } from '../../Contexts/UserContext';
 import axios from 'axios';
 import NewPassword from '../NewPassword/NewPassword';
 

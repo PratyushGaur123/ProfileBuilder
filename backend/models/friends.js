@@ -1,31 +1,20 @@
 const mongoose = require('mongoose');
 
-const commentSchema = new mongoose.Schema({
-    content: {
-        type: String,
-        required: true
-    },
-    user: {
+const friendSchema = new mongoose.Schema({
+    user1: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    post: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Post'
-        }
-    ],
-    likes: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Like'
-        }
-    ]
+    user2: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
 }, {
     timestamps: true
 });
 
-const Comment = mongoose.model('Comment', commentSchema);
+const Friends = mongoose.model('Friends', friendSchema);
 
-module.exports = Comment;
+module.exports = Friends;

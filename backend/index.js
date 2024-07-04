@@ -1,8 +1,11 @@
-const express = require('express');
+const express = require('express')
 const port = 8000;
 const db = require('./config/mongoose');
 const cors = require('cors');
-const app = express();
+const socketIo = require('socket.io');
+const app = require('./sockets/socket').app;
+const server = require('./sockets/socket').server;
+// const io = require('./sockets/socket').io;
 
 
 app.use(express.json());
@@ -22,7 +25,7 @@ app.set('views', './views');
 
 app.use('/', require('./routes'));
 
-app.listen(port, function(err){
+server.listen(port, function(err){
     if(err){
         console.log('Error in firing up the server');
         return;

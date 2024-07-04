@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
-    content: {
+    text: {
         type: String,
         required: true
+    },
+    photo: {
+        type: String
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -23,7 +26,7 @@ const postSchema = new mongoose.Schema({
         }
     ]
 }, {
-    timestamps: true
+    timestamps: true,
 });
 
 const Post = mongoose.model('Post', postSchema);

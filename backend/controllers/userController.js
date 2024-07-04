@@ -144,7 +144,7 @@ module.exports.signInPassword = async function (req, res) {
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ email: user.email, id: user._id }, process.env.CODEIAL_JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({firstName: user.firstName, lastname: user.lastName, verified: user.verified, email: user.email, id: user._id }, process.env.CODEIAL_JWT_SECRET, { expiresIn: '2h' });
         const userInfo = {
             firstName: user.firstName,
             lastName: user.lastName,
@@ -229,7 +229,7 @@ module.exports.signInVerifyOTP = async function (req, res) {
         } else {
             //deleting the otp and creating a jwt token
             const deleteOtp = await OTP.deleteOne({ user: user._id });
-            const token = jwt.sign({ email: user.email, id: user._id }, process.env.CODEIAL_JWT_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ email: user.email, id: user._id }, process.env.CODEIAL_JWT_SECRET, { expiresIn: '5h' });
             const userInfo = {
                 firstName: user.firstName,
                 lastName: user.lastName,
@@ -256,11 +256,11 @@ module.exports.signInVerifyOTP = async function (req, res) {
 
 module.exports.sendLink = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(400).json({ message: 'User not found' });
         }
 
-        const user = await User.findById(req.user);
+        const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -330,10 +330,10 @@ module.exports.verifyLink = async function (req, res) {
 
 module.exports.details = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(400).json({ message: 'User not found' });
         }
-        const user = await User.findById(req.user);
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -486,10 +486,10 @@ module.exports.forgotPasswordUpdate = async function (req, res) {
 
 module.exports.updateProfile = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(400).json({ message: 'User not authenticated' });
         }
-        const user = await User.findById(req.user);
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -563,7 +563,7 @@ module.exports.updateProfile = async function (req, res) {
 /* one controller for resetting password */
 module.exports.resetPassword = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(401).json({ message: 'User not authenticated' })
         }
         const { newPassword, confirmNewPassword, currentPassword } = req.body;
@@ -578,7 +578,7 @@ module.exports.resetPassword = async function (req, res) {
             return res.status(400).json({ message: 'Invalid password format' })
         }
 
-        const user = await User.findById(req.user);
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

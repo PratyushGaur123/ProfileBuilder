@@ -3,8 +3,8 @@ import Otp from '../OTP/Otp';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BeatLoader from "react-spinners/BeatLoader";
-import { useUserContext } from '../../UserContext';
-import styles from './LoginOptions.module.css';
+import { useUserContext } from '../../Contexts/UserContext';
+// import styles from './LoginOptions.module.css';
 
 
 const LoginOptions = ({ email, mailVerified, setMailVerified }) => {
@@ -12,7 +12,7 @@ const LoginOptions = ({ email, mailVerified, setMailVerified }) => {
   const [showOTP, setShowOTP] = useState(false);
   const [showOptions, setShowOptions] = useState(true);
   const [loading, setLoading] = useState(false);
-  const {handleSignInPassword, password, setPassword} = useUserContext();
+  const {handleSignInPassword , password, setPassword } = useUserContext();
 
   const navigate = useNavigate();
 
@@ -104,36 +104,48 @@ const LoginOptions = ({ email, mailVerified, setMailVerified }) => {
       ) : (
         <>
           {showOptions ? (
-            <div className={styles.optionsContainer}>
-            <button onClick={handleOTP} className={styles.optionButton}>Login with OTP</button>
-            <button onClick={handlePassword} className={styles.optionButton}>Login with Password</button>
-          </div>
+            <>
+              <button className="w-full bg-[#ae7aff] p-3 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]"
+                onClick={handleOTP}>Login With OTP</button>
+              <button className="w-full bg-[#ae7aff] p-3 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]"
+                onClick={handlePassword}>Login With Password</button>
+            </>
           ) : null}
 
           {showPassword ? (
-            <div className={styles.passwordContainer}>
+
+            <div className="mx-auto flex w-full items-stretch justify-between gap-10">
               <form onSubmit={handleSignInPassword}>
-                <label htmlFor="password" className={styles.passwordLabel}>Enter your password:</label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  placeholder="Password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={styles.passwordInput}
-                />
-                <button type="submit" className={styles.passwordButton}>Sign In</button>
+                <div className="flex w-full flex-col items-start justify-start gap-2">
+                  <label htmlFor="password" className="text-xs text-slate-200">Password:</label>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Enter Your Password..."
+                    autoComplete="false"
+                    required
+                    className="w-full border-[1px] border-white bg-black p-4 text-white placeholder:text-gray-500"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)} />
+                  <button type="submit" className="w-full bg-[#ae7aff] p-3 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">Sign In</button>
+                </div>
               </form>
             </div>
+            
+
           ) : null}
 
           {showOTP ? <Otp type='sign-in' /> : null}
         </>
       )}
     </>
+
   );
 }
 
 export default LoginOptions;
+/*
+<button onClick={handleOTP} className={styles.optionButton}>Login with OTP</button>
+            <button onClick={handlePassword} className={styles.optionButton}>Login with Password</button>
+*/

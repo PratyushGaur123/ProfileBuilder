@@ -4,7 +4,7 @@ const Reply = require('../models/reply');
 
 module.exports.createComment = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(401).json({ message: 'Authentication required' });
         }
 
@@ -23,7 +23,7 @@ module.exports.createComment = async function (req, res) {
 
         const newComment = await Comment.create({
             content,
-            user: req.user,
+            user: req.user.id,
             post: postId,
         });
 
@@ -56,7 +56,7 @@ module.exports.createComment = async function (req, res) {
 
 module.exports.deleteComment = async function (req, res) {
     try {
-        if (!req.user) {
+        if (!req.user.id) {
             return res.status(400).json({ message: 'Authentication required' });
         }
 
@@ -70,7 +70,7 @@ module.exports.deleteComment = async function (req, res) {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        if (comment.user.toString()!== req.user.toString()) {
+        if (comment.user.toString()!== req.user.id.toString()) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
 

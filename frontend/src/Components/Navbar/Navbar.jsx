@@ -16,17 +16,22 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Grid } from '@mui/material';
-import { useUserContext } from '../../UserContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// Import the specific icon you want to use
+import { faMessage } from '@fortawesome/free-solid-svg-icons';
+import { useUserContext } from '../../Contexts/UserContext';
 import axios from 'axios';
 const drawerWidth = 240;
 
 
-function Navbar(props) {
-  const { window } = props;
+function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, setUser, setEmail, setPassword } = useUserContext();
+  const { setUser, setEmail, setPassword } = useUserContext();
+  const user = false;
   const [navItems, setNavItems] = useState([]);
   const navigate = useNavigate();
+  const type = 'Chat'
+
 
   useEffect(() => {
     if (user) {
@@ -45,9 +50,7 @@ function Navbar(props) {
     }
   }, [user]);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen((prevState) => !prevState);
-  };
+
 
 
   const handleVerifyEmail = async () => {
@@ -100,82 +103,65 @@ function Navbar(props) {
 
 
 
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        MUI
-      </Typography>
-      <Divider />
-      <List>
-        {navItems.map((item, index) => (
-          <ListItem key={index} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={item.name} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
-
-  const container = window !== undefined ? () => window().document.body : undefined;
 
   return (
     <>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar component="nav" sx={{ position: 'static' }}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              variant="h6"
-              component={Link}
-              to={'/'}
-              sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, color: 'white', textDecoration: 'none' }}
-            >
-              PROFILE BUILDER
-            </Typography>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+{!user ? <header className="fixed top-0 z-10 mx-auto w-full max-w-full bg-[#121212] p-6 text-white lg:px-10">
+              <h1 className='text-2xl'>Chatinger</h1>
+            </header>
+: (
+  <header className="fixed top-0 z-10 mx-auto flex w-full max-w-full items-center justify-between border-b-[1px] border-b-slate-300 bg-[#121212] p-4 text-white lg:px-10">
+        <h1 className="text-xl font-extrabold md:text-3xl">CHATINGER</h1>
+        <div className="flex w-max flex-shrink-0 items-center justify-end gap-6">
+          <span className="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+              className="h-8 w-8">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
+            </svg>
+          </span>
+          <span className="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+              className="h-6 w-6 text-white md:h-8 md:w-8">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"></path>
+            </svg>
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 p-1 text-sm text-white md:h-5 md:w-5 md:text-base">4</span>
+          </span>
+          <div className="h-11 w-11 rounded-full border-2 border-white">
 
-              {user ? navItems.map((item, index) => (
-                <Button key={index} onClick={item.method} sx={{ color: '#fff' }}>
-                  {item.name}
-                </Button>
-              )) : navItems.map((item, index) => (
-                <Button component={Link} key={index} to={item.link} sx={{ color: '#fff' }}>
-                  {item.name}
-                </Button>
-              ))}
+            <img
+              src="https://images.pexels.com/photos/18148932/pexels-photo-18148932/free-photo-of-bench-city-man-people.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+              alt="avatar"
+              className="h-10 w-10 rounded-full object-cover" />
+          </div>
 
-            </Box>
-          </Toolbar>
-        </AppBar>
-        <nav>
-          <Drawer
-            container={container}
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
-            }}
-            sx={{
-              display: { xs: 'block', sm: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-            }}
-          >
-            {drawer}
-          </Drawer>
-        </nav>
-      </Box>
+          <span className='relative'>
+            <FontAwesomeIcon icon={faMessage} style={{ color: "#ffffff", height: '3vh' }} />
+          </span>
+
+        </div>
+      </header>
+)}
+     
+
+      
 
       <Outlet />
     </>

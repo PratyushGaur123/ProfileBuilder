@@ -7,6 +7,7 @@ module.exports.userAuth = function (req, res, next) {
         }
 
         const words = token.split(" ");
+        // console.log(words);
 
         if (words.length !== 2 || !words[1]) {
             return res.status(401).json({ message: "Invalid Credentials" });
@@ -15,9 +16,10 @@ module.exports.userAuth = function (req, res, next) {
         const jwtToken = words[1];
 
         const decoded = jwt.verify(jwtToken, process.env.CODEIAL_JWT_SECRET);
-        req.user = decoded.id ;
+        req.user = decoded ;
         next();
     } catch (err) {
+        // console.log(err);
         return res.status(401).json({ message: "Invalid Credentials" });
     }
 }

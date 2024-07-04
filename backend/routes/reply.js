@@ -7,6 +7,5 @@ router.post('/create', authMiddleware.userAuth, replyController.createReply);
 
 router.delete('/delete/:replyId', authMiddleware.userAuth, replyController.deleteReply);
 
-
 module.exports = router;
 

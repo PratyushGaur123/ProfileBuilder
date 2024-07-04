@@ -1,17 +1,27 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const Like = require('../models/like');
+const Reply = require('../models/reply');
 
 module.exports.createPost = async function(req, res){
     try {
-        if(!req.user){
+        if(!req.user.id){
             return res.status(400).json({ message: 'User not found' });
         }
-        const { content } = req.body;
+        const { text } = req.body;
+        console.log(text);
+
+        if(!text){
+            return res.status(400).json({ message: 'Post cannot be empty' });
+        }
 
         const newPost = await Post.create({
-            content,
-            user: req.user
+            text,
+            user: req.user.id
         });
+
+        await newPost.populate('user');  // no need to populate comments and replies for newly created post
+
         return res.status(200).json({
             message: 'Post created successfully',
             data: {
@@ -19,17 +29,18 @@ module.exports.createPost = async function(req, res){
             }
         });
     } catch (error) {
+        // console.log(error);
         return res.status(500).json({ message: 'Internal Server Error while creating post' });
     }
 }
 
 module.exports.readPosts = async function(req, res){
     try {
-        if(!req.user){
+        if(!req.user.id){
             return res.status(400).json({ message: 'User not found' });
         }
         const posts = await Post.find({user: {
-            $ne: req.user
+            $ne: req.user.id
         }})
         .populate('user')
         .populate({
@@ -52,12 +63,12 @@ module.exports.readPosts = async function(req, res){
     }
 }
 
-module.exports.readUserPosts = function(req, res){
+module.exports.readUserPosts = async function(req, res){
     try {
-        if(!req.user){
-            return res.status(400).json({ message: 'User not found' });
+        if(!req.user.id){
+            return res.status(400).json({ message: 'Authentication Required' });
         }
-        const posts = Post.find({user: req.user})
+        const posts = await Post.find({user: req.user.id})
         .populate('user')
         .populate({
             path: 'comments',
@@ -74,13 +85,14 @@ module.exports.readUserPosts = function(req, res){
             }
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: 'Internal Server Error while retrieving user posts'});
     }
 }
 
 module.exports.updatePost = async function(req, res){
     try {
-        if(!req.user){
+        if(!req.user.id){
             return res.status(400).json({ message: 'User not found' });
         }
         const {content} = req.body;
@@ -95,7 +107,7 @@ module.exports.updatePost = async function(req, res){
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        if(post.user.toString() !== req.user.toString()){
+        if(post.user.toString() !== req.user.id.toString()){
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
@@ -118,7 +130,7 @@ module.exports.updatePost = async function(req, res){
 
 module.exports.deletePost = async function(req, res){
     try {
-        if(!req.user){
+        if(!req.user.id){
             return res.status(400).json({ message: 'User not found' });
         }
         const {postId} = req.params;
@@ -131,12 +143,24 @@ module.exports.deletePost = async function(req, res){
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        if(post.user.toString() !== req.user.toString()){
+        if(post.user.toString() !== req.user.id.toString()){
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
+        // The post, comments, replies and the likes associated with all three of them must also be deleted
+
         await Post.findByIdAndDelete(postId);
-        await Comment.deleteMany({post: postId});
+        await Comment.deleteMany({post: postId});       
+
+        
+        await Like.deleteMany({likeAbleId: postId});
+        await Like.deleteMany({likeAbleId: { $in: post.comments }});
+
+        await Reply.deleteMany({comment: { $in: post.comments }});
+        await Like.deleteMany({likeAbleId: { $in: post.comments.map(comment => comment.replies) }});
+
+
+        // add code to delete all the replies to comments as well.
 
         return res.status(200).json({
             message: 'Post deleted successfully'
@@ -145,3 +169,5 @@ module.exports.deletePost = async function(req, res){
         return res.status(500).json({ message: 'Internal Server Error while deleting post' });
     }
 }
+
+//TODO: DONT RETURN SENSITIVE INFO OF THE USER TO FRONTEND
