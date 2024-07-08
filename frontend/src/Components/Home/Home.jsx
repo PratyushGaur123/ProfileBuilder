@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Import the specific icon you want to use
 import { faComment, faHeart, faBookmark, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { HiPaperAirplane } from "react-icons/hi2";
+
 import axios from 'axios';
 
 const Home = () => {
