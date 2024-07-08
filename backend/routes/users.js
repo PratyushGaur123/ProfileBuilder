@@ -13,6 +13,7 @@ router.use('/posts', require('./posts'));
 
 router.use('/inbox', require('./inbox'));
 
+router.use('/friends', require('./friends'));
 
 router.post('/like', authMiddleware.userAuth, likeController.toggleLike);
 

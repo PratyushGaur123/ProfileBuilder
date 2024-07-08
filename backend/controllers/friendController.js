@@ -202,7 +202,7 @@ module.exports.rejectFriendRequest = async function (req, res) {
     }
 }
 
-module.exports.getFriendRequests = async function (req, res) {
+module.exports.fetchFriendRequests = async function (req, res) {
     try {
         if (!req.user.id) {
             return res.status(400).json({
