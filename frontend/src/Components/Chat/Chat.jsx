@@ -4,19 +4,29 @@ import { HiPaperAirplane } from "react-icons/hi2";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperclip } from '@fortawesome/free-solid-svg-icons';
 import { faFaceSmile } from '@fortawesome/free-regular-svg-icons'
+import { useNavigate, useParams } from 'react-router-dom';
+import { useSocketContext } from '../../Contexts/SocketContext';
 
 
 
 
-const Chat = ({ conversationId, setSelectedConversation }) => {
+const Chat = () => {
     const [loading, setLoading] = useState();
     const [conversation, setConversation] = useState(null);
     const [receiver, setReceiver] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const {conversationId} = useParams();
+    const {socket} = useSocketContext();
+    const navigate = useNavigate();
+
+    // useEffect(()=>{
+
+    // }, [socket, ])
 
     useEffect(() => {
         //TODO: Add a check for user (optional)
         if (!conversationId) {
-            setSelectedConversation(null);
+          navigate('/inbox');
             return;
         }
 
@@ -34,11 +44,13 @@ const Chat = ({ conversationId, setSelectedConversation }) => {
                     }
                 });
 
+                const conversation = response.data.data.conversation;
                 if (response.status === 200) {
-                    setConversation(response.data.data.conversation);
-                    setReceiver(response.data.data.conversation.participants[0]);
+                    setConversation(conversation);
+                    setReceiver(conversation.participants[0]);
+                    setMessages(conversation.messages);
                     setLoading(false);
-                    console.log(response.data.data.conversation);
+                    console.log(conversation);
                 }
             } catch (error) {
                 if (error.response) {
@@ -64,7 +76,7 @@ const Chat = ({ conversationId, setSelectedConversation }) => {
                     alert("An unexpected error occurred. Please try again later.");
                 }
                 setLoading(false);
-                setSelectedConversation(null);
+                navigate('/inbox');
             }
         }
         getConversation();
@@ -85,10 +97,10 @@ const Chat = ({ conversationId, setSelectedConversation }) => {
                 </div>
                 <div className="relative h-[calc(100vh-150px)] w-full p-0 md:h-[calc(100vh-158px)] md:p-4">
                     <div className="flex h-[calc(100%-53px)] w-full flex-col-reverse gap-8 overflow-y-auto px-2 py-4 md:h-[calc(100%-90px)] md:p-0">
-                        {conversation.messages.map((message, index) => {
+                        {messages.map((message, index) => {
                             if (message.sender === receiver._id) {
                                 return (
-                                    <div className="flex min-w-[150px] max-w-[80%] items-start justify-start gap-2 text-white md:max-w-[70%]">
+                                    <div className="flex min-w-[150px] max-w-[80%] items-start justify-start gap-2 text-white md:max-w-[70%]" key={index}>
                                         <img
                                             className="flex aspect-square h-7 w-7 flex-shrink-0 rounded-full object-cover md:h-10 md:w-10"
                                             src="https://images.pexels.com/photos/18107024/pexels-photo-18107024/free-photo-of-an-old-city-view.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"

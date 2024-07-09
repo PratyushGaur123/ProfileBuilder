@@ -8,13 +8,16 @@ import ForgotPassword from './Components/ForgotPassword/ForgotPassword';
 import Inbox from './Components/Inbox/Inbox';
 import UserProvider from './Contexts/UserContext';
 import { SocketProvider } from './Contexts/SocketContext';
+import Chat from './Components/Chat/Chat';
 
 
 function App() {
   const routes = createRoutesFromElements(
     <Route path='/' element={< Navbar />} >
       <Route index element={<Home />} />
-      <Route path='inbox' element={<Inbox />} />
+      <Route path='inbox' element={<Inbox />} >
+        <Route path='chat/:conversationId' element={<Chat />} />
+      </Route>
       <Route path='signup' element={<SignUp />} />
       <Route path='signin' element={<SignIn />} >
         <Route path='otpSignIn' element={<Otp />} />
@@ -27,11 +30,11 @@ function App() {
 
   return (
     <>
-        <UserProvider >
-      <RouterProvider router={router} >
-          <SocketProvider />
-      </RouterProvider>
-        </UserProvider>
+      <UserProvider >
+        <SocketProvider >
+          <RouterProvider router={router} />
+        </SocketProvider>
+      </UserProvider >
     </>
   );
 }
