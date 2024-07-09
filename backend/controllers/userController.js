@@ -149,7 +149,8 @@ module.exports.signInPassword = async function (req, res) {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            verified: user.verified
+            verified: user.verified,
+            _id: user._id
         };
         return res.status(200).json(
             {

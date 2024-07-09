@@ -5,6 +5,7 @@ const { getSocketId, io } = require('../sockets/socket');
 
 module.exports.sendFriendRequest = async function (req, res) {
     try {
+        console.log('code agya')
         const { friendId } = req.body;
         if (!req.user.id || !friendId) {
             return res.status(400).json({
@@ -106,7 +107,8 @@ module.exports.acceptFriendRequest = async function (req, res) {
             })
         ]);
 
-        if (!friendRequest || friendRequest.from_user !== friendId || friendRequest.to_user !== req.user.id) {
+        if (!friendRequest || friendRequest.from_user.toString() !== friendId || friendRequest.to_user.toString() !== req.user.id) {
+            console.log(friendRequest);
             return res.status(404).json({
                 message: "Friend Request not found or not valid"
             });
@@ -210,7 +212,7 @@ module.exports.fetchFriendRequests = async function (req, res) {
             });
         }
 
-        const friendRequests = await FriendReq.find({ to_user: req.user.id }).populate('from_user');
+        const friendRequests = await FriendReq.find({ to_user: req.user.id }).populate('from_user', '_id firstName lastName email');
 
         return res.status(200).json({
             message: "Friend Requests",
@@ -228,7 +230,7 @@ module.exports.fetchFriendRequests = async function (req, res) {
 module.exports.fetchFriends = async function (req, res) {
     try {
         if (!req.user.id) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: "Authentication Required"
             });
         }
@@ -242,7 +244,9 @@ module.exports.fetchFriends = async function (req, res) {
 
         return res.status(200).json({
             message: "Friends",
-            friends
+            data: {
+                friends
+            }
         });
 
     } catch (error) {
