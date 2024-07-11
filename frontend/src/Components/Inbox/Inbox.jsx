@@ -10,7 +10,6 @@ function Inbox() {
   const [loading, setLoading] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState(false);
   const { user } = useUserContext();
-  const userId = '664468d055a9622c1b4319fb';
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -96,13 +95,12 @@ function Inbox() {
                     <div className="flex w-full flex-col items-start justify-start gap-1 truncate text-ellipsis">
                       <div className="flex w-full items-center justify-between text-[10px] md:text-xs">
                         {conversation.participants.map((participant, i) => {
-                          console.log(participant);  
-                          if (participant._id !== userId) {
-                            // console.log(participant._id + userId);  
+                          // console.log(participant);  
+                          if (participant._id !== user._id) { 
                             return <p className="text-gray-400" key={i}> {participant.firstName} {participant.lastName}  </p>
                           }
                         })} 
-                        <p className="text-gray-400">2 hours ago</p>
+                        {/* <p className="text-gray-400">2 hours ago</p> */}
                       </div>
                       <p className="text-xs text-white md:text-sm"> {conversation.latestMessage.message} </p>
                     </div>

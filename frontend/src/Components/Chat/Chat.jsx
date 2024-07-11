@@ -15,13 +15,19 @@ const Chat = () => {
     const [conversation, setConversation] = useState(null);
     const [receiver, setReceiver] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [message, setMessage] = useState('');
     const {conversationId} = useParams();
     const {socket} = useSocketContext();
     const navigate = useNavigate();
 
-    // useEffect(()=>{
+    useEffect(()=>{
+      socket.on('newMessage', ({message})=>{
+        setMessages( (prevMessages)=> [message, ...prevMessages] )
+      })
 
-    // }, [socket, ])
+      return ()=> socket.off('newMessage');
+
+    }, [socket]);
 
     useEffect(() => {
         //TODO: Add a check for user (optional)
@@ -83,6 +89,53 @@ const Chat = () => {
 
     }, [conversationId]);
 
+    async function handleSendMessage(){
+      if(message.trim().length === 0){
+        alert('Cant Send an Empty Messsage');
+        return;
+      }
+
+      try {
+        const response = await axios.post(`http://localhost:8000/users/inbox/send`, {
+          receiverId: receiver._id,
+          message
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if(response.status == 200){
+          const {message} = response.data.data;
+          setMessages( (prevMessages)=> [message, ...prevMessages] )
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            alert('ERROR: Authentication is required');
+            localStorage.clear();
+            navigate('/signin');
+          } 
+          else if(error.response.status === 404) {
+            alert('ERROR: User does not exist');
+            navigate('/home');
+          }else if(error.response.status === 400){
+            alert('ERROR: Necessary data not passed');
+          }else{
+            alert('ERROR: Internal Server Error');
+          }
+        }
+        else if (!error.response && error.request) {
+          alert("Network error. Please check your internet connection.");
+        }
+        else {
+          alert("An unexpected error occurred. Please try again later.");
+        }
+        
+      }
+      setMessage('');
+    }
+
     return (
         !conversation||loading ? <div className='h-full w-full md:w-[70%] text-white'> Loading </div> : (
             <div className="h-full w-full md:w-[70%]">
@@ -106,7 +159,9 @@ const Chat = () => {
                                             src="https://images.pexels.com/photos/18107024/pexels-photo-18107024/free-photo-of-an-old-city-view.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
                                             alt="avatar" />
                                         <div className="flex w-full max-w-[70%] flex-col gap-2">
-                                            <p className="text-xs">{receiver.firstName + " " + receiver.lastName}</p>
+                                            <p className="text-xs">{receiver.firstName + " " + receiver.lastName}
+                                            {/* <span class="ml-2 text-gray-400">10 minutes ago</span> */}
+                                            </p>
                                             <div
                                                 className="relative w-fit bg-[#343434] p-3 text-sm after:absolute after:left-0 after:top-0 after:border-r-[15px] after:border-t-[15px] after:border-r-transparent after:border-t-[#121212]">
                                                {message.message}
@@ -125,7 +180,7 @@ const Chat = () => {
                                 <div className="flex w-full flex-col gap-1 md:gap-2 items-end justify-end">
                                     <p className="text-[10px] md:text-xs">
                                         You
-                                        <span className="ml-2 text-gray-400">5 minutes ago</span>
+                                        {/* <span className="ml-2 text-gray-400">5 minutes ago</span> */}
                                     </p>
                                     <div
                                         className="relative w-fit p-2 text-xs after:absolute after:top-0 after:border-t-[15px] after:border-t-[#121212] md:p-3 md:text-sm bg-[#ae7aff] after:right-0 after:border-l-[15px] after:border-l-transparent">
@@ -146,14 +201,14 @@ const Chat = () => {
                             alt="avatar" />
                         <input
                             placeholder="Message..."
-                            className="w-full bg-transparent p-2 text-sm text-white !outline-none placeholder:text-gray-500 md:p-4 md:text-base" />
-                        <button className="hidden h-5 w-5 flex-shrink-0 items-center justify-center p-1 md:flex md:h-10 md:w-10">
+                            className="w-full bg-transparent p-2 text-sm text-white !outline-none placeholder:text-gray-500 md:p-4 md:text-base" value={message}  onChange={(e)=>setMessage(e.target.value)}/>
+                        <button className="hidden h-5 w-5 flex-shrink-0 items-center justify-center p-1 md:flex md:h-10 md:w-10"  >
                             <FontAwesomeIcon icon={faFaceSmile} style={{ color: "#ffffff", }} className='h-5' />
                         </button>
-                        <button className="flex h-7 w-7 flex-shrink-0 items-center justify-center p-1 md:h-10 md:w-10">
+                        <button className="flex h-7 w-7 flex-shrink-0 items-center justify-center p-1 md:h-10 md:w-10" >
                             <FontAwesomeIcon icon={faPaperclip} style={{ color: "#ffffff", }} className='h-5' />
                         </button>
-                        <button className="flex h-7 w-7 flex-shrink-0 items-center justify-center bg-[#f8f7fa] p-1 md:h-10 md:w-10">
+                        <button className="flex h-7 w-7 flex-shrink-0 items-center justify-center bg-[#f8f7fa] p-1 md:h-10 md:w-10" onClick={handleSendMessage}>
                             <HiPaperAirplane className='h-5 w-5' />
                         </button>
                     </div>
