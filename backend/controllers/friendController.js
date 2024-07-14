@@ -5,7 +5,6 @@ const { getSocketId, io } = require('../sockets/socket');
 
 module.exports.sendFriendRequest = async function (req, res) {
     try {
-        console.log('code agya')
         const { friendId } = req.body;
         if (!req.user.id || !friendId) {
             return res.status(400).json({

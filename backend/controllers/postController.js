@@ -9,7 +9,6 @@ module.exports.createPost = async function(req, res){
             return res.status(400).json({ message: 'User not found' });
         }
         const { text } = req.body;
-        console.log(text);
 
         if(!text){
             return res.status(400).json({ message: 'Post cannot be empty' });
@@ -20,7 +19,7 @@ module.exports.createPost = async function(req, res){
             user: req.user.id
         });
 
-        await newPost.populate('user');  // no need to populate comments and replies for newly created post
+        await newPost.populate('user', ' firstName lastName email _id verified ');  // no need to populate comments and replies for newly created post
 
         return res.status(200).json({
             message: 'Post created successfully',
@@ -42,7 +41,7 @@ module.exports.readPosts = async function(req, res){
         const posts = await Post.find({user: {
             $ne: req.user.id
         }})
-        .populate('user')
+        .populate('user', 'firstName lastName email _id gender')
         .populate({
             path: 'comments',
             populate: {
@@ -50,15 +49,22 @@ module.exports.readPosts = async function(req, res){
                 model: 'Reply'
             }
         })
+        .lean()
         .sort({likes: -1});
+
+        const postsData = posts.map( (post)=> ({
+            ...post,
+            likes: post.likes.length
+        }));
 
         return res.status(200).json({
             message: 'Posts retrieved successfully',
             data: {
-                posts
+                posts: postsData
             }
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: 'Internal Server Error while retrieving posts' });
     }
 }

@@ -11,14 +11,14 @@ const emailRegex = /^([a-zA-Z0-9_.+-]+)@(gmail\.com|yahoo\.com|outlook\.com|redi
 
 const signInSchema = zod.object({
     email: zod.string().email().regex(emailRegex, 'Email must be from Gmail, Yahoo, Outlook, or Rediffmail'),
-    password: zod.string().min(8, 'Password must be at least 8 characters long').max(20, 'Password must be at most 20 characters long')
+    password: zod.string().min(8, 'Password must be at least 8 characters long').max(40, 'Password must be at most 40 characters long')
 });
 
 const signUpSchema = zod.object({
     firstName: zod.string().min(3, 'First name must be at least 3 characters long').max(20, 'First name must be at most 20 characters long'),
     lastName: zod.string().min(3, 'Last name must be at least 3 characters long').max(20, 'Last name must be at most 20 characters long'),
     email: zod.string().email().regex(emailRegex, 'Email must be from Gmail, Yahoo, Outlook, or Rediffmail'),
-    password: zod.string().min(8, 'Password must be at least 8 characters long').max(20, 'Password must be at most 20 characters long'),
+    password: zod.string().min(8, 'Password must be at least 8 characters long').max(40, 'Password must be at most 40 characters long'),
     gender: zod.enum(["Male", "Female"], 'Gender must be either Male or Female'),
     dateOfBirth: zod.date().min(new Date('1960-01-01'), { message: "Date of Birth cannot be before 1 Jan 1960" })
         .max(new Date('2006-12-31'), { message: "Date of Birth cannot be after 31 Dec 2006" }),
@@ -61,15 +61,21 @@ function generateOTP() {
 /* Sign Up Controller */
 
 module.exports.signUp = async function (req, res) {
-    // converting the date from string to date object
-    const dateOfBirth = new Date(req.body.dateOfBirth);
+    const {firstName, lastName, email, password, confirmPassword, gender, dateOfBirth} = req.body;
+    const dob = new Date(dateOfBirth);
 
-    if (isNaN(dateOfBirth.getTime())) {
+    if (isNaN(dob.getTime())) {
         return res.status(400).json({ message: 'Invalid date format' });
+    }
+
+    if(!confirmPassword){
+        return res.status(400).json({
+            message: 'Confirm Password is requried'
+        });
     }
     const response = signUpSchema.safeParse({
         ...req.body,
-        dateOfBirth
+        dateOfBirth: dob
     });
 
     if (!response.success) {
@@ -78,33 +84,33 @@ module.exports.signUp = async function (req, res) {
     }
 
     try {
-        if (req.body.password !== req.body.confirmPassword) {
+        if (password !== confirmPassword) {
             return res.status(400).json({ message: "Passwords do not match" });
         }
 
         // check if the user already exists
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
         // hash the password
         const salt = await bcrypt.genSalt(saltRounds);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         // const formattedDate = dateOfBirth.toISOString().split('T')[0];
 
         // create a new user
         const newUser = await User.create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
+            firstName,
+            lastName,
+            email,
             password: hashedPassword,
-            gender: req.body.gender,
-            dateOfBirth: req.body.dateOfBirth
+            gender: gender,
+            dateOfBirth: dob
         });
 
-        userMailer.welcomeMail(newUser);
+        // userMailer.welcomeMail(newUser);
 
         return res.status(200).json(
             {
@@ -125,7 +131,8 @@ module.exports.signUp = async function (req, res) {
 /* Three controllers for signing in: one for password and the other two for sending and verifying the otp respectively */
 
 module.exports.signInPassword = async function (req, res) {
-    if (!req.body.email || !req.body.password) {
+    const {email, password} = req.body;
+    if (!email || !password) {
         return res.status(400).json({ message: 'Please send the input' });
     }
 
@@ -136,19 +143,20 @@ module.exports.signInPassword = async function (req, res) {
     }
 
     try {
-        const user = await User.findOne({ email: req.body.email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const isMatch = await bcrypt.compare(req.body.password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({firstName: user.firstName, lastname: user.lastName, verified: user.verified, email: user.email, id: user._id }, process.env.CODEIAL_JWT_SECRET, { expiresIn: '2h' });
+        const token = jwt.sign({firstName: user.firstName, lastname: user.lastName, verified: user.verified, email: user.email, id: user._id, gender: user.gender}, process.env.CODEIAL_JWT_SECRET, { expiresIn: '2h' });
         const userInfo = {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
+            gender: user.gender,
             verified: user.verified,
             _id: user._id
         };
@@ -611,4 +619,5 @@ module.exports.resetPassword = async function (req, res) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+
 

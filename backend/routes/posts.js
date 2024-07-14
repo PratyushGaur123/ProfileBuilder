@@ -7,6 +7,8 @@ router.use('/:postId/comment', require('./comment'));
 
 router.post('/create', authMiddleware.userAuth, postController.createPost);
 
+router.get('/', authMiddleware.userAuth, postController.readPosts );
+
 router.get('/myposts', authMiddleware.userAuth, postController.readUserPosts );
 
 router.put('/update/:postId', authMiddleware.userAuth, postController.updatePost);

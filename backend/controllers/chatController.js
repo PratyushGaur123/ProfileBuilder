@@ -5,10 +5,15 @@ const { getSocketId, io } = require('../sockets/socket');
 
 module.exports.sendMessage = async function (req, res) {
     try {
-        const { message } = req.body;
-        const { receiverId } = req.params;
+        const { message, receiverId } = req.body;
 
-        if (!req.user.id || !message || !receiverId) {
+        if(!req.user.id){
+            return res.status(401).json({
+                message: "Authentication Required"
+            });
+        }
+
+        if (!message || !receiverId) {
             return res.status(400).json({
                 message: "Invalid Request => data not passed"
             });
@@ -46,19 +51,24 @@ module.exports.sendMessage = async function (req, res) {
             $push: { messages: newMessage._id }
         }, { new: true });
 
+        const messageData = {
+            sender: newMessage.sender,
+            receiver: newMessage.receiver,
+            message: newMessage.message
+        };
+
         //TODO: Add socket logic
         const receiverSocketId = getSocketId(receiverId);
         if(receiverSocketId){
             io.to(receiverSocketId).emit('newMessage', {
-                message: newMessage,
-                sender: req.user.id
+                message: messageData,
             });
         }
 
         return res.status(200).json({
-            message: "Message created successfully",
+            message: "Message sent successfully",
             data: {
-                message: newMessage
+                message: messageData
             }
         })
     } catch (error) {
