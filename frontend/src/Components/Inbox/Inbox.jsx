@@ -95,7 +95,6 @@ function Inbox() {
                     <div className="flex w-full flex-col items-start justify-start gap-1 truncate text-ellipsis">
                       <div className="flex w-full items-center justify-between text-[10px] md:text-xs">
                         {conversation.participants.map((participant, i) => {
-                          // console.log(participant);  
                           if (participant._id !== user._id) { 
                             return <p className="text-gray-400" key={i}> {participant.firstName} {participant.lastName}  </p>
                           }
@@ -111,7 +110,9 @@ function Inbox() {
             </ul>
           </div>
 
-          {!selectedConversation ? <div className='h-full w-full md:w-[70%] text-white'> Please select a conversation </div> : <Outlet/>}
+          {!selectedConversation ? <div className="flex items-center justify-center h-full w-full md:w-[70%] text-white text-center text-2xl">
+    Please select a conversation
+  </div> : <Outlet/>}
 
  
         </div>

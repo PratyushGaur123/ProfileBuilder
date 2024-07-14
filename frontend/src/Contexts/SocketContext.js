@@ -23,21 +23,15 @@ export function SocketProvider({ children }) {
 
             });
 
-            console.log('socket connection bn gya');
-
             socket.on('connect', () => {
                 setSocket(socket);
             });
 
             socket.on('getOnlineUsers', (users) => {
-                console.log('Following users are online: '+ users );
-                console.log(typeof(users));
-                console.log('length: ' + + users.length)
                 setGetOnlineUsers(users);
             });
 
             socket.on('userOnline', (user) => {
-                console.log('your friend just came online' + user);
                 setGetOnlineUsers(users => [...users, user]);
             });
 

@@ -1,62 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Home.module.css';
 import { useUserContext } from '../../Contexts/UserContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import BeatLoader from "react-spinners/BeatLoader";
+import MoonLoader from "react-spinners/MoonLoader";
 import NewPassword from '../NewPassword/NewPassword';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// Import the specific icon you want to use
-import { faComment, faHeart, faBookmark, faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { HiPaperAirplane } from "react-icons/hi2";
+import { faUserPlus, faUserMinus } from '@fortawesome/free-solid-svg-icons';
+import maleprofile from "../../static/maleprofile.jpg";
+import femaleprofile from "../../static/femaleprofile.jpg";
+import useRandomUsers from '../../Hooks/useRandomUsers';
 
-import axios from 'axios';
+const notifications = [
+  { id: 1, message: 'John Doe liked your post' },
+  { id: 2, message: 'Jane Smith commented on your photo' },
+  { id: 3, message: 'You have a new follower' },
+  // Add more notifications as needed
+];
 
 const Home = () => {
 
-  const { user, firstName, setFirstName, lastName, setLastName, email, setEmail, setUser } = useUserContext();
+  const { user } = useUserContext();
   const navigate = useNavigate();
-  const [readOnly, setReadOnly] = useState(true);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [showCancel, setShowCancel] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [text, setText] = useState('');
-  const [posts, setPosts] = useState([]);
-  // console.log(user);
+  // const [readOnly, setReadOnly] = useState(true);
+  // const [showNewPassword, setShowNewPassword] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  // const [showCancel, setShowCancel] = useState(false);
+  const { randomUsers } = useRandomUsers();
+
 
 
   useEffect(() => {
-    if(!user){
+    if (!user) {
       navigate('/signin');
       return;
     }
-    async function fetchPosts() {
-      try {
-        const res = await axios.get('http://localhost:8000/users/posts/myposts', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
 
-        if (res.status === 200) {
-          const postArray = res.data.data.posts;
-          postArray.map((post) => {
-            return {
-              ...post,
-              isLiked: false,
-            }
-          });
-          setPosts(postArray);
-          // console.log(res.data);
-        }
-      } catch (error) {
-        console.log(error.response.data.message);
+  }, [user]);
 
-      }
-    }
-    fetchPosts();
+  if (!user) {
+    return <MoonLoader color="#ffffff" speedMultiplier={2} />
+  }
 
-  }, []);
 
   // function handleResetPassword() {
   //   setShowNewPassword(true);
@@ -136,90 +121,21 @@ const Home = () => {
 
   /* {loading ? <BeatLoader color="#4c8ee6" speedMultiplier={3} size={13} />  */
 
-  async function handlePostCreate() {
-    if (!text) {
-      alert("Please enter a post");
-      return;
-    } else {
-      try {
-        const res = await axios.post('http://localhost:8000/users/posts/create', {
-          text,
-        }, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        if (res.status === 200) {
-          let post = res.data.data.post;
-          // console.log(post);
-          setPosts([post, ...posts]);
-        }
-      } catch (error) {
+  
 
-      }
-      setText('');
-    }
-  }
-
-  async function handlePostDelete(postId) {
-    try {
-      const res = await axios.delete(`http://localhost:8000/users/posts/delete/${postId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (res.status === 200) {
-        let newPosts = posts.filter((post) => post._id !== postId);
-        setPosts(newPosts);
-      }
-    } catch (error) {
-      alert('Post could not be deleted');
-    }
-  }
-  async function handlePostLike(postId) {
-    if(!postId){
-      return;
-    }
-    try {
-      const res = await axios.post('http://localhost:8000/users/like', {
-        likeAbleId: postId,
-        type: 'Post'
-      }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if(res.status === 200){
-        const postIndex = posts.findIndex((post) => post._id === postId);
-        if(postIndex!== -1){
-          const newPosts = [...posts];
-          newPosts[postIndex].isLiked =!newPosts[postIndex].isLiked;
-          setPosts(newPosts);
-        }
-        // setIsLiked( (isLiked) =>!isLiked);
-      }
-
-    } catch (error) {
-      console.log('The post could not be liked');
-    }
-  }
-  //bg-[#ae7aff]
   return (
     <>
 
       <div className="min-h-screen bg-[#121212]">
-
-        <div className="mt-[65px] grid grid-cols-12 gap-4 pb-8 pt-0 sm:px-4 sm:pt-8 md:mt-[83px] lg:px-10">
-
+        <div className="mt-[65px] grid grid-cols-12 gap-4 pb-8 pt-0 sm:px-4 sm:pt-8 md:mt-[83px] lg:px-10"> 
           <aside className="hidden text-white md:col-span-4 md:block lg:col-span-3">
             <div className="sticky top-[100px] border p-4">
               <img
                 className="mb-3 flex aspect-square h-16 w-16 flex-shrink-0 rounded-full object-cover"
-                src="https://images.pexels.com/photos/7775642/pexels-photo-7775642.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                src={user.gender === 'Male' ? maleprofile : femaleprofile}
                 alt="avatar" />
-              <h2>Aurora Starlight</h2>
-              <p className="text-sm"><button className="hover:text-[#ae7aff]">starryaurora@gmail.com</button></p>
+              <h2>{user.firstName + ' ' + user.lastName}</h2>
+              <p className="text-sm"><button className="hover:text-[#ae7aff]"> {user.email} </button></p>
               <hr className="my-2 h-[1px] w-full" />
               <p className="mb-4">Night owl | Moon enthusiast | Wanderlust 🌕🌙🌎</p>
               <button
@@ -229,126 +145,29 @@ const Home = () => {
             </div>
           </aside>
 
-          <section className="col-span-12 md:col-span-8 lg:col-span-6">
-
-            {/* CREATE POST */}
-            <div className="mb-2 flex w-full items-center justify-start border-b border-t border-white px-4 py-2 sm:mb-6 sm:border-l sm:border-r sm:shadow-[5px_5px_0px_0px_#4f4e4e]">
-              <img
-                className="flex aspect-square h-10 w-10 shrink-0 rounded-full object-cover"
-                src="https://images.pexels.com/photos/7775642/pexels-photo-7775642.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                alt="avatar" />
-              <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Type to add something"
-                className="w-full bg-transparent p-2 text-white !outline-none placeholder:text-gray-500 md:p-4" />
-              <div className="flex gap-x-1 sm:gap-x-2">
-                {/* <button className="flex shrink-0 items-center justify-center p-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                    className="w-6 text-white">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"></path>
-                  </svg>
-                </button> */}
-                {/* <button className="flex shrink-0 items-center justify-center p-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                    className="w-6 text-white">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4.5v15m7.5-7.5h-15"></path>
-                  </svg>
-                </button> bg-[#ae7aff]*/}
-                <button className="flex shrink-0 items-center justify-center bg-[#f8f7fa] p-1" type='submit' onClick={handlePostCreate}>
-                <HiPaperAirplane  className='h-5 w-5' />
-                </button>
-              </div>
-            </div>
-
-            {/* POSTS  <FontAwesomeIcon icon="fa-solid fa-trash-can" style={{color: "#fe0b0b",}} />*/}
-            {posts.map((post, index) => (
-              <div className="relative mb-2 w-full last:mb-0 sm:mb-4" key={index}>
-                <div className="flex border-b border-t border-white p-4 text-white sm:border-l sm:border-r">
-                  <div className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
-                    <img
-                      src="https://images.pexels.com/photos/18264716/pexels-photo-18264716.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                      alt="Mystical Wanderer"
-                      className="h-full w-full rounded-full object-cover" />
-                  </div>
-                  <div className="pl-4 pt-1 w-full">
-                    <div className="mb-2 flex items-center gap-x-2">
-                      <div className="w-full">
-                        <h2 className="inline-block font-bold">Mystical Wanderer</h2>
-                        <span className="ml-2 inline-block text-sm text-gray-400">15 minutes ago</span>
-                      </div>
-                      <button className="ml-auto shrink-0  text-red-500 hover:text-red-600" onClick={() => handlePostDelete(post._id)}>
-                        {/* TODO: Check if user created the post and only then show the delete button */}
-                        <FontAwesomeIcon
-                          icon={faTrashCan}
-                          className='h-5 w-5'
-                        />
-                      </button>
-                    </div>
-                    <p className="mb-4 text-sm sm:text-base"> {post.content} </p>
-                    <div className="flex gap-x-4">
-                      <button
-                        className={`group inline-flex items-center gap-x-1 outline-none ${post.isLiked ? 'text-red-600': 'text-white hover:text-red-600 '} `} 
-                        onClick={() => handlePostLike(post._id)}>
-                        <FontAwesomeIcon icon={faHeart} className="h-5 w-5 " />
-                      </button>
-                      <button className="inline-flex items-center gap-x-1 outline-none hover:text-[#ae7aff]">
-                        <FontAwesomeIcon icon={faComment} flip='horizontal' className="h-5 w-5 " />
-                        <span>13</span>
-                      </button>
-
-                      <div className="ml-auto">
-                        <button className="group inline-flex items-center gap-x-1 outline-none hover:text-[#ae7aff] focus:text-[#ae7aff]">
-                          <FontAwesomeIcon icon={faBookmark} className="h-5 w-5 " />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-
-          </section>
+          <Outlet/> 
+         
           <aside className="hidden text-white lg:col-span-3 lg:block">
-            {/* <div className="sticky top-[100px] border p-4">
-              <h2 className="mb-4 font-bold"># Trending Hashtags</h2>
-              <ul className="list-disc pl-4">
-                <li><button className="hover:text-[#ae7aff]">#javascript</button></li>
-                <li><button className="hover:text-[#ae7aff]">#typescript</button></li>
-                <li><button className="hover:text-[#ae7aff]">#java</button></li>
-                <li><button className="hover:text-[#ae7aff]">#python</button></li>
-                <li><button className="hover:text-[#ae7aff]">#golang</button></li>
-              </ul>
-            </div> */}
-             <div className="sticky top-[100px] border p-4">
-              <h2 className="mb-4 font-bold"># Trending Hashtags</h2>
-              <ul className="list-disc pl-4">
-                <li><button className="hover:text-[#ae7aff]">#javascript</button></li>
-                <li><button className="hover:text-[#ae7aff]">#typescript</button></li>
-                <li><button className="hover:text-[#ae7aff]">#java</button></li>
-                <li><button className="hover:text-[#ae7aff]">#python</button></li>
-                <li><button className="hover:text-[#ae7aff]">#golang</button></li>
-              </ul>
+            <div className="sticky top-[100px] border p-4">
+              <h2 className="mb-4 font-bold">People You May Know!</h2>
+              {randomUsers.map((randomUser, index) => (
+                <>
+                  <div className="flex items-center space-x-4" key={index}>
+                    <img
+                      className="aspect-square h-16 w-16 flex-shrink-0 rounded-full object-cover"
+                      src={randomUser.gender === 'Male' ? maleprofile : femaleprofile}
+                      alt="avatar"
+                    />
+                    <h2 className="flex-grow">{randomUser.firstName + ' ' + randomUser.lastName}  </h2>
+                    <button
+                      className="inline-flex w-max items-center bg-[#f8f7fa] px-4 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">
+                      <FontAwesomeIcon icon={faUserPlus} style={{ color: "#000000", }} />
+                      {/* <FontAwesomeIcon icon={faUserMinus} style={{ color: "#e01b24", }} /> */}
+                    </button>
+                  </div>
+                  <hr className="my-2 h-[1px] w-full" />
+                </>
+              ))}
             </div>
           </aside>
         </div>
@@ -356,6 +175,7 @@ const Home = () => {
     </>
   );
 }
+
 
 export default Home;
 
@@ -382,15 +202,18 @@ export default Home;
               <div className={styles.profile}>
                 <div className={styles.field}>
                   <label className={styles.label}>First Name:</label>
-                  <input type="text" className={styles.input} value={ showCancel ? firstName : user.firstName} onChange={(e) => setFirstName(e.target.value)} readOnly={readOnly} />
+                  <input type="text" className={styles.input} value={ showCancel ? firstName : user.firstName} onChange={(e) => setFirstName(e.target.value)} 
+                  readOnly={readOnly} />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>Last Name:</label>
-                  <input type="text" className={styles.input} value={ showCancel ? lastName : user.lastName}  readOnly={readOnly} onChange={(e) => setLastName(e.target.value)} />
+                  <input type="text" className={styles.input} value={ showCancel ? lastName : user.lastName}  readOnly={readOnly} 
+                  onChange={(e) => setLastName(e.target.value)} />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>Email:</label>
-                  <input type="email" className={styles.input} value={ showCancel ? email : user.email}  readOnly={readOnly} onChange={(e) => setEmail(e.target.value)} />
+                  <input type="email" className={styles.input} value={ showCancel ? email : user.email}  readOnly={readOnly} 
+                  onChange={(e) => setEmail(e.target.value)} />
                 </div>
               </div>
             </div>

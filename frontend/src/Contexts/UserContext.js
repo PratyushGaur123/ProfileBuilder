@@ -102,16 +102,11 @@ function UserProvider({ children, navigate }) {
                     password
                 });
             if (response.status === 200) {
+                const {user, token} = response.data.data;
                 setEmail('');
                 setPassword('');
-                setFirstName('');
-                setLastName('');
-                setGender('');
-                setDateOfBirth('');
-                setUser(response.data.data.user);
-                const token = response.data.data.token;
+                setUser({...user, token});
                 localStorage.setItem("token", token);
-                return;
             }
         } catch (error) {
             if (error.response) {
